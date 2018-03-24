@@ -7,23 +7,25 @@ import (
 
 func main() {
 	//do cool stuff here
-	makeAllTheFolders("tester")
+	makeAllTheFolders("tester", false)
 }
 
 //create file structure
-func makeAllTheFolders(fileName string) {
+func makeAllTheFolders(fileName string, redux bool) {
 	os.MkdirAll("../"+fileName, os.ModePerm)
 	// os.MkdirAll("../" + fileName + "/public", os.ModePerm)
 	os.MkdirAll("../"+fileName+"/src", os.ModePerm)
 	os.MkdirAll("../"+fileName+"/src/components", os.ModePerm)
 	os.MkdirAll("../"+fileName+"/src/components/header", os.ModePerm)
 	os.MkdirAll("../"+fileName+"/src/css", os.ModePerm)
-
-	makeAllTheFiles(fileName)
+	if redux{
+		os.MkdirAll("../"+fileName+"/src/ducks", os.ModePerm)
+	}
+	makeAllTheFiles(fileName, redux)
 }
 
 //create files
-func makeAllTheFiles(fileName string) {
+func makeAllTheFiles(fileName string, redux bool) {
 	//declare items to use for creation below
 	//gitignore
 	const GITIGNORE = `# dependencies
@@ -84,10 +86,7 @@ yarn-error.log*
 		  "react-stylux": "^0.4.2",
 		  "webpack-cli": "^2.0.13"
 		}
-	  }
-	
-	
-	`
+	  }`
 
 	//webpack config
 	const WEBPACKCONFIG = `module.exports = {
@@ -134,10 +133,7 @@ yarn-error.log*
     <div id="root"></div>
     <script src="./bundle.js"></script>
 </body>
-</html>
-	
-	
-	`
+</html>`
 
 	//index.js
 	const INDEXJS = `import React from 'react';
@@ -146,10 +142,7 @@ import App from './components/App.jsx';
 
 ReactDOM.render(
     <App />,
-    document.getElementById("root"));
-	
-	
-	`
+	document.getElementById("root"));`
 
 	//app.js
 	const APPJS = `import React from 'react';
@@ -161,7 +154,6 @@ ReactDOM.render(
 			)
 		}
 	}
-	
 	`
 
 	//headercomponent
@@ -174,7 +166,97 @@ ReactDOM.render(
 		} 
 	
 	`
+			/*need for if redux is true and stuff */
+			const STORE=`import {createStore, applyMiddleware} from 'redux';
+			import promisemiddleware from 'redux-promise-middleware';
+			import reducer from './ducks/reducer';
+			
+			export default createStore(reducer, applyMiddleware(promisemiddleware()))
+			`
 
+			const REDUCER=`import axios from 'axios';
+
+			const initialState = {
+				something: [],
+			}
+
+			const TEST = 'TEST';
+
+			export function test() {
+				    return {
+				        type: TEST,
+				        payload: console.log('testing complete')
+				    }
+				}
+
+				export default function reducer(state = initialState, action) {
+					switch (action.type) {
+					case TEST:
+					return action.payload
+					default:
+						return state;
+				}
+			}
+			`
+
+
+	/*below triggers if redux is true */
+	if redux {
+		const PACKAGEJSON = `{
+			"name": "placeholder",
+			"version": "0.0.1",
+			"description": "this should probably be updated",
+			"main": "/src/index.js",
+			"scripts": {
+			  "test": "echo \"Error: no test specified\" && exit 1",
+			  "build": "webpack",
+			  "start": "webpack-dev-server --inline --hot"
+			},
+			"repository": {
+			  "type": "git",
+			  "url": "https://github.com/FoxChrisRealTheGit/go-basic-react-webpack-builder"
+			},
+			"author": "Christopher Fox",
+			"license": "ISC",
+			"dependencies": {
+			  "babel-core": "^6.26.0",
+			  "babel-loader": "^7.1.4",
+			  "babel-preset-react": "^6.24.1",
+			  "react": "^16.2.0",
+			  "react-dom": "^16.2.0",
+			  "webpack": "^4.1.1",
+			  "react-stylux": "^0.4.2",
+			  "webpack-cli": "^2.0.13",
+			  "redux-promise-middleware":"^5.0.0",
+			  "redux":"^3.7.2",
+			  "react-redux": "^5.0.7"
+			  "axios": "^0.18.0"
+			}
+		  }`
+
+		const INDEXJS = `import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './components/App.jsx';
+import { Provider } from 'react-redux';
+import store from './store';
+
+ReactDOM.render(
+	<Provider store={store}>
+<App />
+</Provider>,
+document.getElementById("root"));`
+
+		const APPJS = `import React from 'react';
+	export default class App extends React.Component{
+
+		render(){
+			return(
+				<p>hi</p>
+			)
+		}
+	}
+	`
+	}
 	/* below are the os create/write opperations for file creation */
 
 	//make the .gitignore
@@ -232,6 +314,18 @@ ReactDOM.render(
 	// defer appjs.Close()
 	// io.WriteString(headercomp, HEADERCOMP)
 	// //checkError(err)
+	if redux{
+		store, _ := os.Create("../"+ fileName + "/src/store.js")
+		//checkError(err)
+		defer store.Close()
+		io.WriteString(store, STORE)
+
+		reducer, _ := os.Create("../"+ fileName + "/src/ducks/reducer.js")
+		//checkError(err)
+		defer reducer.Close()
+		io.WriteString(reducer, REDUCER)
+	}
+
 }
 
 func checkError(err error) {
