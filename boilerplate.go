@@ -7,7 +7,7 @@ import (
 
 func main() {
 	//do cool stuff here
-	makeAllTheFolders("tester", false)
+	makeAllTheFolders("reduxtester", false)
 }
 
 //create file structure
@@ -60,7 +60,7 @@ yarn-error.log*
 	`
 
 	//package.json
-	const PACKAGEJSON = `{
+	var PACKAGEJSON = `{
 		"name": "placeholder",
 		"version": "0.0.1",
 		"description": "this should probably be updated",
@@ -136,7 +136,7 @@ yarn-error.log*
 </html>`
 
 	//index.js
-	const INDEXJS = `import React from 'react';
+	var INDEXJS = `import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './components/App.jsx';
 
@@ -145,7 +145,7 @@ ReactDOM.render(
 	document.getElementById("root"));`
 
 	//app.js
-	const APPJS = `import React from 'react';
+	var APPJS = `import React from 'react';
 	export default class App extends React.Component{
 
 		render(){
@@ -177,7 +177,7 @@ ReactDOM.render(
 			const REDUCER=`import axios from 'axios';
 
 			const initialState = {
-				something: [],
+				something: "sort of works",
 			}
 
 			const TEST = 'TEST';
@@ -185,14 +185,15 @@ ReactDOM.render(
 			export function test() {
 				    return {
 				        type: TEST,
-				        payload: console.log('testing complete')
+				        payload: "Testing Complete"
 				    }
 				}
 
 				export default function reducer(state = initialState, action) {
 					switch (action.type) {
 					case TEST:
-					return action.payload
+					let test = action.payload
+					return  Object.assign({}, state, {something: test})
 					default:
 						return state;
 				}
@@ -202,7 +203,7 @@ ReactDOM.render(
 
 	/*below triggers if redux is true */
 	if redux {
-		const PACKAGEJSON = `{
+		 PACKAGEJSON = `{
 			"name": "placeholder",
 			"version": "0.0.1",
 			"description": "this should probably be updated",
@@ -229,12 +230,12 @@ ReactDOM.render(
 			  "webpack-cli": "^2.0.13",
 			  "redux-promise-middleware":"^5.0.0",
 			  "redux":"^3.7.2",
-			  "react-redux": "^5.0.7"
+			  "react-redux": "^5.0.7",
 			  "axios": "^0.18.0"
 			}
 		  }`
 
-		const INDEXJS = `import React from 'react';
+		 INDEXJS = `import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './components/App.jsx';
 import { Provider } from 'react-redux';
@@ -246,15 +247,21 @@ ReactDOM.render(
 </Provider>,
 document.getElementById("root"));`
 
-		const APPJS = `import React from 'react';
-	export default class App extends React.Component{
-
+		 APPJS = `import React from 'react';
+		 import {connect} from 'react-redux';
+		 import {test} from '../ducks/reducer';
+	class App extends React.Component{
 		render(){
+			// this.props.test()
 			return(
-				<p>hi</p>
+				<p>{this.props.something}</p>
 			)
 		}
 	}
+		function mapStateToProps(state) {
+			return state
+		}
+		export default connect(mapStateToProps, { test })(App);
 	`
 	}
 	/* below are the os create/write opperations for file creation */
